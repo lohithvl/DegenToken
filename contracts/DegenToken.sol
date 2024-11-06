@@ -6,19 +6,26 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
 contract DegenToken is ERC20, Ownable, ERC20Burnable {
-    constructor(uint initialSupply) ERC20("Degen Token", "DGN") Ownable(msg.sender) {
-        _mint(msg.sender, initialSupply);
+    // Pass msg.sender to the Ownable constructor explicitly
+    constructor() ERC20("Degen Token", "DGN") Ownable(msg.sender) {
+        _mint(msg.sender, 0); // Mint initial supply to the contract deployer
     }
 
     event ItemPurchased(address indexed buyer, uint indexed itemId, string itemName, uint price);
     event TokensPurchased(address indexed buyer, uint amount);
-    event BonusIssued(address indexed recipient, uint bonusAmount);
+    event TokensMinted(address indexed minter, address indexed recipient, uint amount);
 
-    // Modified purchaseTokens to include a purchase limit
-    function purchaseTokens(uint amount) external {
+    // Modified purchaseTokens to include a purchase limit and allow minting to another address
+    function purchaseTokens(address to, uint amount) external onlyOwner {
         require(amount > 0 && amount <= 100, "Amount must be between 1 and 100"); // Limit token purchase
-        _mint(msg.sender, amount);
-        emit TokensPurchased(msg.sender, amount);
+        require(to != address(0), "Cannot mint to the zero address");
+
+        _mint(to, amount); // Mint the specified amount to the 'to' address
+        emit TokensPurchased(to, amount);
+    }
+
+    function mint(address to, uint256 amount) public onlyOwner {
+        _mint(to, amount);
     }
 
     // New buyItem function to include different item prices and a bonus for higher items
@@ -48,18 +55,17 @@ contract DegenToken is ERC20, Ownable, ERC20Burnable {
 
     // Modified bonus function: now can only be called after a purchase
     function calculateDamage(uint attackPower, uint defense) external pure returns (uint) {
-    require(attackPower > 0, "Attack power must be greater than zero");
-    require(defense >= 0, "Defense must be zero or higher");
+        require(attackPower > 0, "Attack power must be greater than zero");
+        require(defense >= 0, "Defense must be zero or higher");
 
-    // Step 1: Calculate reduced damage based on defense
-    uint reducedDamage = attackPower - (defense / 3); // Reduce defense's impact by 1/3
+        // Step 1: Calculate reduced damage based on defense
+        uint reducedDamage = attackPower - (defense / 3); // Reduce defense's impact by 1/3
 
-    // Step 2: Ensure damage does not go below zero
-    uint finalDamage = reducedDamage > 0 ? reducedDamage : 0;
+        // Step 2: Ensure damage does not go below zero
+        uint finalDamage = reducedDamage > 0 ? reducedDamage : 0;
 
-    return finalDamage;
-}
-
+        return finalDamage;
+    }
 
     function getBalance() public view returns (uint256) {
         return balanceOf(msg.sender);
