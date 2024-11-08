@@ -6,26 +6,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
 contract DegenToken is ERC20, Ownable, ERC20Burnable {
-    // Pass msg.sender to the Ownable constructor explicitly
-    constructor() ERC20("Degen Token", "DGN") Ownable(msg.sender) {
-        _mint(msg.sender, 0); // Mint initial supply to the contract deployer
-    }
-
-    event ItemPurchased(address indexed buyer, uint indexed itemId, string itemName, uint price);
-    event TokensPurchased(address indexed buyer, uint amount);
-    event TokensMinted(address indexed minter, address indexed recipient, uint amount);
-
-    // Modified purchaseTokens to include a purchase limit and allow minting to another address
-    function purchaseTokens(address to, uint amount) external onlyOwner {
-        require(amount > 0 && amount <= 100, "Amount must be between 1 and 100"); // Limit token purchase
-        require(to != address(0), "Cannot mint to the zero address");
-
-        _mint(to, amount); // Mint the specified amount to the 'to' address
-        emit TokensPurchased(to, amount);
-    }
-
-    function mint(address to, uint256 amount) public onlyOwner {
-        _mint(to, amount);
+    string public GameBuffs;
+    constructor(address initialOwner) ERC20("Degen", "DGN") Ownable(initialOwner) {
+    GameBuffs = "We have 3 buffs 1.Magic Wand 2.Enchanted Shield  3.Speed Boots";
     }
 
     // New buyItem function to include different item prices and a bonus for higher items
@@ -50,11 +33,11 @@ contract DegenToken is ERC20, Ownable, ERC20Burnable {
 
         _burn(msg.sender, price);
 
-        emit ItemPurchased(msg.sender, itemId, itemName, price);
+    
     }
 
     // Modified bonus function: now can only be called after a purchase
-    function calculateDamage(uint attackPower, uint defense) external pure returns (uint) {
+    function AttackBonus(uint attackPower, uint defense) external {
         require(attackPower > 0, "Attack power must be greater than zero");
         require(defense >= 0, "Defense must be zero or higher");
 
@@ -64,7 +47,7 @@ contract DegenToken is ERC20, Ownable, ERC20Burnable {
         // Step 2: Ensure damage does not go below zero
         uint finalDamage = reducedDamage > 0 ? reducedDamage : 0;
 
-        return finalDamage;
+        _mint(msg.sender, finalDamage);
     }
 
     function getBalance() public view returns (uint256) {
