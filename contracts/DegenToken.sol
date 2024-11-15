@@ -7,31 +7,49 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
 contract DegenToken is ERC20, Ownable, ERC20Burnable {
     string public GameBuffs;
+ struct Item {
+        string name;
+        uint256 redeemAmount;
+    }
+    // Mapping to associate itemId with item names
+    mapping(uint => string) private itemNames;
+     mapping(uint256 => Item) public items;
+    mapping(address => mapping(uint256 => uint256)) public redeemedItems; 
 
-    constructor(address initialOwner) ERC20("Degen", "DGN") Ownable(initialOwner)  {
+    constructor(address initialOwner) ERC20("Degen", "DGN") Ownable(initialOwner) {
         GameBuffs = "We have 3 buffs 1. Magic Wand 2. Enchanted Shield 3. Speed Boots";
+        
+        // Initialize item names for quick retrieval
+        items[1] = Item("Magic Wand",1);
+        items[2] = Item("Enchanted Shield",3);
+        items[3] = Item("Speed Boots",5);
     }
 
-    function buyItem(uint itemId) external {
+    function buyItem(uint itemId) external payable  {
         require(itemId >= 1 && itemId <= 3, "Invalid item ID");
 
         uint price;
-        string memory itemName;
 
         if (itemId == 1) {
             price = 1;
-            itemName = "Magic Wand";
         } else if (itemId == 2) {
             price = 3;
-            itemName = "Enchanted Shield";
+            
         } else if (itemId == 3) {
             price = 5;
-            itemName = "Speed Boots";
+    
         }
 
         require(balanceOf(msg.sender) >= price, "Insufficient balance");
         _burn(msg.sender, price);
+
+        redeemedItems[msg.sender][itemId] += 1;
     }
+
+    function getRedeemedItems(address user, uint256 item) external view returns (uint256) {
+        return redeemedItems[user][item]; // Function to get the count of redeemed items for a user
+    }
+
 
     function AttackBonus(uint attackPower, uint defense) external {
         require(attackPower > 0, "Attack power must be greater than zero");
@@ -58,5 +76,4 @@ contract DegenToken is ERC20, Ownable, ERC20Burnable {
     function getBalance() public view returns (uint256) {
         return balanceOf(msg.sender);
     }
-
 }
