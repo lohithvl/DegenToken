@@ -11,8 +11,6 @@ contract DegenToken is ERC20, Ownable, ERC20Burnable {
         string name;
         uint256 redeemAmount;
     }
-    // Mapping to associate itemId with item names
-    mapping(uint => string) private itemNames;
      mapping(uint256 => Item) public items;
     mapping(address => mapping(uint256 => uint256)) public redeemedItems; 
 
