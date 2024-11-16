@@ -16,8 +16,7 @@ contract DegenToken is ERC20, Ownable, ERC20Burnable {
 
     constructor(address initialOwner) ERC20("Degen", "DGN") Ownable(initialOwner) {
         GameBuffs = "We have 3 buffs 1. Magic Wand 2. Enchanted Shield 3. Speed Boots";
-        
-        // Initialize item names for quick retrieval
+
         items[1] = Item("Magic Wand",1);
         items[2] = Item("Enchanted Shield",3);
         items[3] = Item("Speed Boots",5);
@@ -25,19 +24,14 @@ contract DegenToken is ERC20, Ownable, ERC20Burnable {
 
     function buyItem(uint itemId) external payable  {
         require(itemId >= 1 && itemId <= 3, "Invalid item ID");
-
         uint price;
-
         if (itemId == 1) {
             price = 1;
         } else if (itemId == 2) {
-            price = 3;
-            
+            price = 3;          
         } else if (itemId == 3) {
             price = 5;
-    
         }
-
         require(balanceOf(msg.sender) >= price, "Insufficient balance");
         _burn(msg.sender, price);
 
@@ -45,9 +39,8 @@ contract DegenToken is ERC20, Ownable, ERC20Burnable {
     }
 
     function getRedeemedItems(address user, uint256 item) external view returns (uint256) {
-        return redeemedItems[user][item]; // Function to get the count of redeemed items for a user
+        return redeemedItems[user][item];
     }
-
 
     function AttackBonus(uint attackPower, uint defense) external {
         require(attackPower > 0, "Attack power must be greater than zero");
